@@ -15,14 +15,15 @@ namespace SimTimeToRealTime
       DateTime dt_latestTick = DateTime.Now;
       DateTime dt_latestTickRWgmt = DateTime.UtcNow;
       DateTime dt_simTime = DateTime.UtcNow;
-      
-      TimeSpan ts_simLocalTime = new TimeSpan();
+      DateTime dt_simLocalTime = DateTime.UtcNow;
+
+      Boolean event1_isactive = false;
 
 
       int[] ev1_timerem = { 0, 0 };
 
-      int rwoffset = 0;
-      int simoffset = 0;
+      
+     
 
 
       public Form1()
@@ -39,7 +40,7 @@ namespace SimTimeToRealTime
          {
             get_time_update_gmt();
             update_simtimes();
-            update_eventtimes();
+            update_remtime();
          }
          
 
@@ -57,7 +58,7 @@ namespace SimTimeToRealTime
 
       private void update_simtimes()
       {
-         ts_simLocalTime = ts_simLocalTime.Add(new TimeSpan(0, 1, 0));
+         dt_simLocalTime = dt_simLocalTime.Add(new TimeSpan(0, 1, 0));
          dt_simTime = dt_simTime.Add(new TimeSpan(0, 1, 0));
          write_simtimes();
       }
@@ -65,90 +66,122 @@ namespace SimTimeToRealTime
       private void write_simtimes()
       {
          simgmt.Text = dt_simTime.ToShortDateString() + " " + dt_simTime.ToShortTimeString();
-         simlocal.Text = ts_simLocalTime.ToString();
+         simlocal.Text = dt_simLocalTime.ToShortDateString() + " " + dt_simLocalTime.ToShortTimeString();
       }
 
-      private void update_eventtimes()
-      {
-         if(ev1_timerem[1] == 0)
-         {
-            if(ev1_timerem[0] != 0)
-            {
-               ev1_timerem[0] -= 1;
-               ev1_timerem[1] = 59;
-            }
-         }
-         else
-         {
-            ev1_timerem[1] -= 1;
-         }
-         write_eventtimes();
-      }
-      
-      private void write_eventtimes()
-      {
-         ev1_TR.Text = "TR: " + ev1_timerem[0].ToString() + ":" + ev1_timerem[1].ToString();
-      }
+
+      /*
+
+    
+
       
 
-      private void setrwoffset_Click(object sender, EventArgs e)
-      {
-         String[] simtimearr = Simtimebox.Text.Split(':');
-         simoffset = int.Parse(ltobox.Text);
+     private void write_eventtimes()
+     {
+        ev1_TR.Text = "TR: " + ev1_timerem[0].ToString() + ":" + ev1_timerem[1].ToString();
+     }
 
-         
-         ts_simLocalTime = new TimeSpan(int.Parse(simtimearr[0]) + simoffset, int.Parse(simtimearr[1]), 0);
+
+
+
+
+
+     private void calc_Event1_Click(object sender, EventArgs e)
+     {
+
+        String[] eventtimearr = ev1_timebox.Text.Split(':');
+        int[] evta = { int.Parse(eventtimearr[0]), int.Parse(eventtimearr[1]) };
+        TimeSpan eventdiff = new TimeSpan(evta[0] - dt_simTime.Hour, evta[1] - dt_simTime.Minute, 0 );
+
+
+        ev1_simgmt.Text = new TimeSpan(evta[0], evta[1], 0).ToString();
+        ev1_simlt.Text = new TimeSpan(evta[0] + (int)SimTimeOffset.Value, evta[1], 0).ToString();
+
+        ev1_systemtime.Text = dt_latestTick.Add(eventdiff).ToShortTimeString();
+        ev1_rwgmt.Text = dt_latestTickRWgmt.Add(eventdiff).ToShortTimeString();
+
+        ev1_timerem[0] = evta[0] - dt_simTime.Hour;
+        ev1_timerem[1] = evta[1] - dt_simTime.Minute;
+
+        if(ev1_timerem[1] < 0)
+        {
+           if(ev1_timerem[0] > 0)
+           {
+              ev1_timerem[0] -= 1;
+              ev1_timerem[1] = 60 + ev1_timerem[1];
+           }
+           else
+           {
+              ev1_timerem = new int[] { 0,0};
+           }
+        } else if(ev1_timerem[0] < 0)
+        {
+           ev1_timerem = new int[] { 0,0 };
+        }
+
+        write_eventtimes();
+
+     }*/
+
+      private void update_remtime()
+      {
+         DateTime ev1time = Time1Picker.Value;
+         TimeSpan ev1diff = ev1time - dt_simTime;
+         ev1_TR.Text = ev1diff.ToString();
+      }
+
+      private void recalculate_eventTimes()
+      {
+         if (event1_isactive)
+            calculate_event1times();
+      }
+
+      private void SimTimePicker_ValueChanged(object sender, EventArgs e)
+      {
+         dt_simTime = SimTimePicker.Value;
+         dt_simLocalTime = dt_simTime.Add(new TimeSpan((int)SimTimeOffset.Value, 0, 0));
          write_simtimes();
-            
+         recalculate_eventTimes();
       }
 
-      private void Simtimebox_TextChanged(object sender, EventArgs e)
+    
+
+      private void SimTimeOffset_ValueChanged(object sender, EventArgs e)
       {
-         
-      }
-
-      private void calc_Event1_Click(object sender, EventArgs e)
-      {
-
-         String[] eventtimearr = ev1_timebox.Text.Split(':');
-         int[] evta = { int.Parse(eventtimearr[0]), int.Parse(eventtimearr[1]) };
-         TimeSpan eventdiff = new TimeSpan(evta[0] - dt_simTime.Hour, evta[1] - dt_simTime.Minute, 0 );
-         
-
-         ev1_simgmt.Text = new TimeSpan(evta[0], evta[1], 0).ToString();
-         ev1_simlt.Text = new TimeSpan(evta[0] + simoffset, evta[1], 0).ToString();
-
-         ev1systemtime.Text = dt_latestTick.Add(eventdiff).ToShortTimeString();
-         ev1_rwgmt.Text = dt_latestTickRWgmt.Add(eventdiff).ToShortTimeString();
-
-         ev1_timerem[0] = evta[0] - dt_simTime.Hour;
-         ev1_timerem[1] = evta[1] - dt_simTime.Minute;
-
-         if(ev1_timerem[1] < 0)
-         {
-            if(ev1_timerem[0] > 0)
-            {
-               ev1_timerem[0] -= 1;
-               ev1_timerem[1] = 60 + ev1_timerem[1];
-            }
-            else
-            {
-               ev1_timerem = new int[] { 0,0};
-            }
-         } else if(ev1_timerem[0] < 0)
-         {
-            ev1_timerem = new int[] { 0,0 };
-         }
-
-         write_eventtimes();
-
-      }
-
-      private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
-      {
-         dt_simTime = dateTimePicker1.Value;
+         dt_simLocalTime = dt_simTime.Add(new TimeSpan((int)SimTimeOffset.Value, 0, 0));
          write_simtimes();
-         write_eventtimes();
+         recalculate_eventTimes();
+      }
+
+      private void Time1Picker_ValueChanged(object sender, EventArgs e)
+      {
+         event1_isactive = true;
+         calculate_event1times(); 
+      }
+
+      private void calculate_event1times()
+      {
+         DateTime ev1time = Time1Picker.Value, ev1simt, ev1simlt, ev1rwt, ev1st;
+
+         TimeSpan ev1diff = ev1time - dt_simTime;
+         //for now just assume its given in gmt
+         ev1simt = ev1time;
+         ev1simlt = ev1time.Add(new TimeSpan((int)SimTimeOffset.Value, 0, 0));
+         ev1rwt = dt_latestTickRWgmt.Add(ev1diff);
+         ev1st = dt_latestTick.Add(ev1diff);
+
+         ev1_TR.Text = ev1diff.ToString();
+         ev1_simgmt.Text = write_dateTime(ev1simt);
+         ev1_simlt.Text = write_dateTime(ev1simlt);
+         ev1_rwgmt.Text = write_dateTime(ev1rwt);
+         ev1_systemtime.Text = write_dateTime(ev1st);
+      }
+
+    
+
+      private String write_dateTime(DateTime dt)
+      {
+         return dt.ToShortDateString() + " " + dt.ToShortTimeString();
       }
    }
 }
