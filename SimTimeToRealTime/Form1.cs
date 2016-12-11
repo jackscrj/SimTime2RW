@@ -170,8 +170,8 @@ namespace SimTimeToRealTime
          ux_ev1TR.Text = write_timeSpan(ev1diff);
          ux_ev1SimUTC.Text = write_dateTime(ev1simt);
          ux_ev1SimLocalTime.Text = write_dateTime(ev1simlt);
-         ux_ev1SystemTime.Text = write_dateTime(ev1rwt);
-         ux_ev1RWUTC.Text = write_dateTime(ev1st);
+         ux_ev1SystemTime.Text = write_dateTime(ev1st);
+         ux_ev1RWUTC.Text = write_dateTime(ev1rwt);
       }
 
       private void calculate_event2times()
@@ -188,8 +188,8 @@ namespace SimTimeToRealTime
          ux_ev2TR.Text = write_timeSpan(ev2diff);
          ux_ev2SimUTC.Text = write_dateTime(ev2simt);
          ux_ev2SimLocalTime.Text = write_dateTime(ev2simlt);
-         ux_ev2SystemTime.Text = write_dateTime(ev2rwt);
-         ux_ev2RWUTC.Text = write_dateTime(ev2st);
+         ux_ev2SystemTime.Text = write_dateTime(ev2st);
+         ux_ev2RWUTC.Text = write_dateTime(ev2rwt);
       }
 
       private void calculate_event3times()
@@ -206,8 +206,8 @@ namespace SimTimeToRealTime
          ux_ev3TR.Text = write_timeSpan(ev3diff);
          ux_ev3SimUTC.Text = write_dateTime(ev3simt);
          ux_ev3SimLocalTime.Text = write_dateTime(ev3simlt);
-         ux_ev3SystemTime.Text = write_dateTime(ev3rwt);
-         ux_ev3RWUTC.Text = write_dateTime(ev3st);
+         ux_ev3SystemTime.Text = write_dateTime(ev3st);
+         ux_ev3RWUTC.Text = write_dateTime(ev3rwt);
       }
 
       private void calculate_event4times()
@@ -224,8 +224,8 @@ namespace SimTimeToRealTime
          ux_ev4TR.Text = write_timeSpan(ev4diff);
          ux_ev4SimUTC.Text = write_dateTime(ev4simt);
          ux_ev4SimLocalTime.Text = write_dateTime(ev4simlt);
-         ux_ev4SystemTime.Text = write_dateTime(ev4rwt);
-         ux_ev4RWUTC.Text = write_dateTime(ev4st);
+         ux_ev4SystemTime.Text = write_dateTime(ev4st);
+         ux_ev4RWUTC.Text = write_dateTime(ev4rwt);
       }
 
       private void calculate_event5times()
@@ -242,8 +242,8 @@ namespace SimTimeToRealTime
          ux_ev5TR.Text = write_timeSpan(ev5diff);
          ux_ev5SimUTC.Text = write_dateTime(ev5simt);
          ux_ev5SimLocalTime.Text = write_dateTime(ev5simlt);
-         ux_ev5SystemTime.Text = write_dateTime(ev5rwt);
-         ux_ev5RWUTC.Text = write_dateTime(ev5st);
+         ux_ev5SystemTime.Text = write_dateTime(ev5st);
+         ux_ev5RWUTC.Text = write_dateTime(ev5rwt);
       }
 
       private String write_dateTime(DateTime dt)
