@@ -253,12 +253,31 @@ namespace SimTimeToRealTime
       private void dateFormat_SelectedIndexChanged(object sender, EventArgs e)
       {
          if ((string)ux_dateFormat.SelectedItem == "MM/DD/YY")
+         {
             dateFormatstring = "M/d/yy";
+            ux_ev1TimePicker.CustomFormat = "M/d/yy HH:mm";
+            ux_ev2TimePicker.CustomFormat = "M/d/yy HH:mm";
+            ux_ev3TimePicker.CustomFormat = "M/d/yy HH:mm";
+            ux_ev4TimePicker.CustomFormat = "M/d/yy HH:mm";
+            ux_ev5TimePicker.CustomFormat = "M/d/yy HH:mm";
+            ux_simTimePicker.CustomFormat = "M/d/yy HH:mm";
+         }
          else if ((string)ux_dateFormat.SelectedItem == "DD/MM/YY")
+         {
             dateFormatstring = "d/M/yy";
+            ux_ev1TimePicker.CustomFormat = "d/M/yy HH:mm";
+            ux_ev2TimePicker.CustomFormat = "d/M/yy HH:mm";
+            ux_ev3TimePicker.CustomFormat = "d/M/yy HH:mm";
+            ux_ev4TimePicker.CustomFormat = "d/M/yy HH:mm";
+            ux_ev5TimePicker.CustomFormat = "d/M/yy HH:mm";
+            ux_simTimePicker.CustomFormat = "d/M/yy HH:mm";
+         }
+
          get_time_update();
          write_simtimes();
          recalculate_eventTimes();
+
+         
       }
 
       private String write_dateTime(DateTime dt)
