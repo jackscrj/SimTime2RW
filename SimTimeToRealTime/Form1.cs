@@ -151,7 +151,6 @@ namespace SimTimeToRealTime
          dt_simLocalTime = dt_simTime.Add(new TimeSpan((int)SimTimeOffset.Value, 0, 0));
          write_simtimes();
          recalculate_eventTimes();
-         //test
       }
 
       private void Time1Picker_ValueChanged(object sender, EventArgs e)
