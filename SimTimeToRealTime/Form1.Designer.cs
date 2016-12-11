@@ -86,6 +86,8 @@
          this.ux_ev4TimePicker = new System.Windows.Forms.DateTimePicker();
          this.ux_ev5TimePicker = new System.Windows.Forms.DateTimePicker();
          this.label13 = new System.Windows.Forms.Label();
+         this.ux_dateFormat = new System.Windows.Forms.ComboBox();
+         this.label14 = new System.Windows.Forms.Label();
          ((System.ComponentModel.ISupportInitialize)(this.ux_simTimeOffset)).BeginInit();
          this.tableLayoutPanel1.SuspendLayout();
          this.tableLayoutPanel2.SuspendLayout();
@@ -683,11 +685,35 @@
          this.label13.Text = "Event (Sim UTC)";
          this.label13.TextAlign = System.Drawing.ContentAlignment.TopRight;
          // 
+         // ux_dateFormat
+         // 
+         this.ux_dateFormat.FormattingEnabled = true;
+         this.ux_dateFormat.Items.AddRange(new object[] {
+            "MM/DD/YY",
+            "DD/MM/YY"});
+         this.ux_dateFormat.Location = new System.Drawing.Point(118, 88);
+         this.ux_dateFormat.Name = "ux_dateFormat";
+         this.ux_dateFormat.Size = new System.Drawing.Size(121, 28);
+         this.ux_dateFormat.TabIndex = 42;
+         this.ux_dateFormat.Text = "MM/DD/YY";
+         this.ux_dateFormat.SelectedIndexChanged += new System.EventHandler(this.dateFormat_SelectedIndexChanged);
+         // 
+         // label14
+         // 
+         this.label14.AutoSize = true;
+         this.label14.Location = new System.Drawing.Point(13, 91);
+         this.label14.Name = "label14";
+         this.label14.Size = new System.Drawing.Size(99, 20);
+         this.label14.TabIndex = 43;
+         this.label14.Text = "Date Format";
+         // 
          // Form1
          // 
          this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
          this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-         this.ClientSize = new System.Drawing.Size(1258, 394);
+         this.ClientSize = new System.Drawing.Size(1258, 528);
+         this.Controls.Add(this.label14);
+         this.Controls.Add(this.ux_dateFormat);
          this.Controls.Add(this.label13);
          this.Controls.Add(this.ux_ev5TimePicker);
          this.Controls.Add(this.ux_ev4TimePicker);
@@ -706,6 +732,7 @@
          this.Controls.Add(this.ux_simTimePicker);
          this.Controls.Add(this.label2);
          this.Controls.Add(this.label1);
+         this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
          this.Name = "Form1";
          this.Text = "SimTime2RW";
          ((System.ComponentModel.ISupportInitialize)(this.ux_simTimeOffset)).EndInit();
@@ -777,6 +804,8 @@
       private System.Windows.Forms.Label ux_ev3SimLocalTime;
       private System.Windows.Forms.Label ux_ev5RWUTC;
       private System.Windows.Forms.Label label13;
+      private System.Windows.Forms.ComboBox ux_dateFormat;
+      private System.Windows.Forms.Label label14;
    }
 }
 

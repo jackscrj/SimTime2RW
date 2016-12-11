@@ -23,6 +23,8 @@ namespace SimTimeToRealTime
               ev4_isactive = false,
               ev5_isactive = false;
 
+      String dateFormatstring = "M/d/yy";
+
       public Form1()
       {
          InitializeComponent();
@@ -210,6 +212,8 @@ namespace SimTimeToRealTime
          ux_ev3RWUTC.Text = write_dateTime(ev3rwt);
       }
 
+     
+
       private void calculate_event4times()
       {
          DateTime ev4time = ux_ev4TimePicker.Value, ev4simt, ev4simlt, ev4rwt, ev4st;
@@ -246,9 +250,20 @@ namespace SimTimeToRealTime
          ux_ev5RWUTC.Text = write_dateTime(ev5rwt);
       }
 
+      private void dateFormat_SelectedIndexChanged(object sender, EventArgs e)
+      {
+         if ((string)ux_dateFormat.SelectedItem == "MM/DD/YY")
+            dateFormatstring = "M/d/yy";
+         else if ((string)ux_dateFormat.SelectedItem == "DD/MM/YY")
+            dateFormatstring = "d/M/yy";
+         get_time_update();
+         write_simtimes();
+         recalculate_eventTimes();
+      }
+
       private String write_dateTime(DateTime dt)
       {
-         return dt.ToString("M/d/yy HH:mm"); 
+         return dt.ToString(dateFormatstring + " HH:mm"); 
       }
 
       private String write_timeSpan(TimeSpan ts)
