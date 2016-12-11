@@ -24,6 +24,12 @@ namespace SimTimeToRealTime
               ev5_isactive = false;
 
       String dateFormatstring = "M/d/yy";
+      String[] englishLabels = { "Set Sim Time (UTC)", "Sim Local Time Offset", "Date Format", "Time",
+         "Event (Sim UTC)", "Real World UTC", "System Time", "Sim UTC", "Sim Local", "Time Rem", "RW UTC",
+         "System Time", "Sim UTC", "Sim Local" };
+      String[] spanishLabels = { "Hora del simulador (UTC)", "Diferencia hora local y UTC (simulador)", "Formato de la fecha",
+         "Nombre", "Evento del simulador (UTC)", "Hora UTC Real", "Hora en Windows", "Hora del simulador (UTC)", "Hora local del simulador",
+         "Tiempo restante", "Hora UTC Real", "Hora en Windows", "Hora del simulador (UTC)", "Hola local del simulador" };
 
       public Form1()
       {
@@ -230,6 +236,35 @@ namespace SimTimeToRealTime
          ux_ev4SimLocalTime.Text = write_dateTime(ev4simlt);
          ux_ev4SystemTime.Text = write_dateTime(ev4st);
          ux_ev4RWUTC.Text = write_dateTime(ev4rwt);
+      }
+
+      private void ux_language_SelectedIndexChanged(object sender, EventArgs e)
+      {
+         if ((string)ux_language.SelectedItem == "English" )
+         {
+            set_labels(englishLabels);
+         } else if ((string)ux_language.SelectedItem == "Español")
+         {
+            set_labels(spanishLabels);
+         }
+      }
+
+      private void set_labels(String[] txt)
+      {
+         ux_label0.Text = txt[0];
+         ux_label1.Text = txt[1];
+         ux_label2.Text = txt[2];
+         ux_label3.Text = txt[3];
+         ux_label4.Text = txt[4];
+         ux_label5.Text = txt[5];
+         ux_label6.Text = txt[6];
+         ux_label7.Text = txt[7];
+         ux_label8.Text = txt[8];
+         ux_label9.Text = txt[9];
+         ux_label10.Text = txt[10];
+         ux_label11.Text = txt[11];
+         ux_label12.Text = txt[12];
+         ux_label13.Text = txt[13];
       }
 
       private void calculate_event5times()
