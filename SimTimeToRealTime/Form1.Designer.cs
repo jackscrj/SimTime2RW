@@ -707,7 +707,7 @@
          this.Controls.Add(this.label2);
          this.Controls.Add(this.label1);
          this.Name = "Form1";
-         this.Text = "Form1";
+         this.Text = "SimTime2RW";
          ((System.ComponentModel.ISupportInitialize)(this.ux_simTimeOffset)).EndInit();
          this.tableLayoutPanel1.ResumeLayout(false);
          this.tableLayoutPanel1.PerformLayout();
