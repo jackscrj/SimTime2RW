@@ -711,7 +711,7 @@
          // 
          this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
          this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-         this.ClientSize = new System.Drawing.Size(1258, 528);
+         this.ClientSize = new System.Drawing.Size(1258, 392);
          this.Controls.Add(this.label14);
          this.Controls.Add(this.ux_dateFormat);
          this.Controls.Add(this.label13);
