@@ -6,7 +6,9 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.FlightSimulator.SimConnect;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace SimTimeToRealTime
 {
@@ -24,7 +26,7 @@ namespace SimTimeToRealTime
               ev5_isactive = false;
 
       String dateFormatstring = "M/d/yy";
-      String[] englishLabels = { "Set Sim Time (UTC)", "Sim Local Time Offset", "Date Format", "Time",
+      String[] englishLabels = { "Set Sim Time (UTC)", "Sim Local Time Offset", "Date Format", "Name",
          "Event (Sim UTC)", "Real World UTC", "System Time", "Sim UTC", "Sim Local", "Time Rem", "RW UTC",
          "System Time", "Sim UTC", "Sim Local" };
       String[] spanishLabels = { "Hora del simulador (UTC)", "Diferencia hora local y UTC (simulador)", "Formato de la fecha",
@@ -267,6 +269,7 @@ namespace SimTimeToRealTime
          ux_label13.Text = txt[13];
       }
 
+
       private void calculate_event5times()
       {
          DateTime ev5time = ux_ev5TimePicker.Value, ev5simt, ev5simlt, ev5rwt, ev5st;
@@ -285,27 +288,29 @@ namespace SimTimeToRealTime
          ux_ev5RWUTC.Text = write_dateTime(ev5rwt);
       }
 
+     
+
       private void dateFormat_SelectedIndexChanged(object sender, EventArgs e)
       {
          if ((string)ux_dateFormat.SelectedItem == "MM/DD/YY")
          {
-            dateFormatstring = "M/d/yy";
-            ux_ev1TimePicker.CustomFormat = "M/d/yy HH:mm";
-            ux_ev2TimePicker.CustomFormat = "M/d/yy HH:mm";
-            ux_ev3TimePicker.CustomFormat = "M/d/yy HH:mm";
-            ux_ev4TimePicker.CustomFormat = "M/d/yy HH:mm";
-            ux_ev5TimePicker.CustomFormat = "M/d/yy HH:mm";
-            ux_simTimePicker.CustomFormat = "M/d/yy HH:mm";
+            dateFormatstring = "M/dd/yy";
+            ux_ev1TimePicker.CustomFormat = dateFormatstring;
+            ux_ev2TimePicker.CustomFormat = dateFormatstring;
+            ux_ev3TimePicker.CustomFormat = dateFormatstring;
+            ux_ev4TimePicker.CustomFormat = dateFormatstring;
+            ux_ev5TimePicker.CustomFormat = dateFormatstring;
+            ux_simTimePicker.CustomFormat = dateFormatstring;
          }
          else if ((string)ux_dateFormat.SelectedItem == "DD/MM/YY")
          {
-            dateFormatstring = "d/M/yy";
-            ux_ev1TimePicker.CustomFormat = "d/M/yy HH:mm";
-            ux_ev2TimePicker.CustomFormat = "d/M/yy HH:mm";
-            ux_ev3TimePicker.CustomFormat = "d/M/yy HH:mm";
-            ux_ev4TimePicker.CustomFormat = "d/M/yy HH:mm";
-            ux_ev5TimePicker.CustomFormat = "d/M/yy HH:mm";
-            ux_simTimePicker.CustomFormat = "d/M/yy HH:mm";
+            dateFormatstring = "dd/M/yy";
+            ux_ev1TimePicker.CustomFormat = dateFormatstring;
+            ux_ev2TimePicker.CustomFormat = dateFormatstring;
+            ux_ev3TimePicker.CustomFormat = dateFormatstring;
+            ux_ev4TimePicker.CustomFormat = dateFormatstring;
+            ux_ev5TimePicker.CustomFormat = dateFormatstring;
+            ux_simTimePicker.CustomFormat = dateFormatstring;
          }
 
          get_time_update();
@@ -330,5 +335,166 @@ namespace SimTimeToRealTime
          rtn += ts.ToString(@"hh\:mm");
          return rtn;
       }
+
+
+      /////////////////////////////////////
+      ///   Start SIMCONNECT Section   ///
+      ////////////////////////////////////
+     
+
+      private void button2_Click(object sender, EventArgs e)
+      {
+         get_sim_time();
+      }
+
+      DateTime sct;
+
+
+      const int WM_USER_SIMCONNECT = 0x0402;
+      // Open
+      // Declare a SimConnect object 
+      SimConnect simconnect = null;
+      IntPtr handle;
+      
+
+      enum DEFINITIONS
+      {
+         Struct1,
+      }
+
+      enum DATA_REQUESTS
+      {
+         REQUEST_1,
+      };
+
+      [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+      struct StructTime
+      {
+         public double absoluteTime;
+      };
+
+      protected override void DefWndProc(ref Message m)
+      {
+         if (m.Msg == WM_USER_SIMCONNECT)
+         {
+            if (simconnect != null)
+            {
+               simconnect.ReceiveMessage();
+            }
+         }
+         else
+         {
+            base.DefWndProc(ref m);
+         }
+      }
+
+      private Boolean connect_simconnect()
+      {
+         handle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+         try
+         {
+            simconnect = new SimConnect("Managed Data Request", handle, WM_USER_SIMCONNECT, null, 0);
+         }
+         catch (COMException ex)
+         {
+            // A connection to the SimConnect server could not be established 
+            return false;
+         }
+         return true;
+      }
+
+      private Boolean disconnect_simconnect()
+      {
+         // Close
+         if (simconnect != null)
+         {
+            simconnect.Dispose();
+            simconnect = null;
+            return true;
+         }
+         return false;
+      }
+
+      public void get_sim_time()
+      {
+         connect_simconnect();
+
+         try
+         {
+            // listen to connect and quit msgs
+            simconnect.OnRecvOpen += new SimConnect.RecvOpenEventHandler(simconnect_OnRecvOpen);
+            simconnect.OnRecvQuit += new SimConnect.RecvQuitEventHandler(simconnect_OnRecvQuit);
+
+            // listen to exceptions
+            simconnect.OnRecvException += new SimConnect.RecvExceptionEventHandler(simconnect_OnRecvException);
+
+            // define a data structure
+            simconnect.AddToDataDefinition(DEFINITIONS.Struct1, "ABSOLUTE TIME", "seconds", SIMCONNECT_DATATYPE.FLOAT64, 999999999.0f, SimConnect.SIMCONNECT_UNUSED);
+
+            // IMPORTANT: register it with the simconnect managed wrapper marshaller
+            // if you skip this step, you will only receive a uint in the .dwData field.
+            simconnect.RegisterDataDefineStruct<StructTime>(DEFINITIONS.Struct1);
+
+            // catch a simobject data request
+            simconnect.OnRecvSimobjectDataBytype += new SimConnect.RecvSimobjectDataBytypeEventHandler(simconnect_OnRecvSimobjectDataBytype);
+         }
+         catch (COMException ex)
+         {
+            MessageBox.Show(ex.Message);
+         }
+
+         simconnect.RequestDataOnSimObjectType(DATA_REQUESTS.REQUEST_1, DEFINITIONS.Struct1, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
+         
+      }
+
+      void simconnect_OnRecvSimobjectDataBytype(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data)
+      {
+
+         switch ((DATA_REQUESTS)data.dwRequestID)
+         {
+            case DATA_REQUESTS.REQUEST_1:
+               StructTime s1 = (StructTime)data.dwData[0];
+
+               sct = new DateTime();
+               sct = sct.AddSeconds(s1.absoluteTime);
+               dt_simTime = sct;
+               dt_simLocalTime = dt_simTime.Add(new TimeSpan((int)ux_simTimeOffset.Value, 0, 0));
+               ux_simTimePicker.Value = sct;
+               write_simtimes();
+               recalculate_eventTimes();
+               break;
+
+            default:
+               MessageBox.Show("Unknown request ID: " + data.dwRequestID);
+               break;
+         }
+      }
+
+      void simconnect_OnRecvOpen(SimConnect sender, SIMCONNECT_RECV_OPEN data)
+      {
+         //MessageBox.Show("Connected to Prepar3D");
+      }
+
+      // The case where the user closes Prepar3D
+      void simconnect_OnRecvQuit(SimConnect sender, SIMCONNECT_RECV data)
+      {
+         MessageBox.Show("Prepar3D has exited");
+         disconnect_simconnect();
+      }
+
+      void simconnect_OnRecvException(SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
+      {
+         MessageBox.Show("Exception received: " + data.dwException);
+      }
+
+      // The case where the user closes the client
+      private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+      {
+         disconnect_simconnect();
+      }
+
+
    }
+
 }
+
