@@ -90,6 +90,8 @@
          this.ux_label2 = new System.Windows.Forms.Label();
          this.ux_language = new System.Windows.Forms.ComboBox();
          this.button2 = new System.Windows.Forms.Button();
+         this.button1 = new System.Windows.Forms.Button();
+         this.checkBox1 = new System.Windows.Forms.CheckBox();
          ((System.ComponentModel.ISupportInitialize)(this.ux_simTimeOffset)).BeginInit();
          this.tableLayoutPanel1.SuspendLayout();
          this.tableLayoutPanel2.SuspendLayout();
@@ -155,7 +157,6 @@
          // 
          // timer1
          // 
-         this.timer1.Enabled = true;
          this.timer1.Interval = 1000;
          this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
          // 
@@ -725,19 +726,42 @@
          // 
          // button2
          // 
-         this.button2.Location = new System.Drawing.Point(418, 7);
+         this.button2.Location = new System.Drawing.Point(408, 44);
          this.button2.Name = "button2";
-         this.button2.Size = new System.Drawing.Size(146, 30);
+         this.button2.Size = new System.Drawing.Size(157, 30);
          this.button2.TabIndex = 46;
-         this.button2.Text = "Get Sim Time";
+         this.button2.Text = "Get Time From Sim";
          this.button2.UseVisualStyleBackColor = true;
          this.button2.Click += new System.EventHandler(this.button2_Click);
+         // 
+         // button1
+         // 
+         this.button1.Location = new System.Drawing.Point(407, 80);
+         this.button1.Name = "button1";
+         this.button1.Size = new System.Drawing.Size(157, 31);
+         this.button1.TabIndex = 47;
+         this.button1.Text = "Send Time To Sim";
+         this.button1.UseVisualStyleBackColor = true;
+         this.button1.Click += new System.EventHandler(this.button1_Click);
+         // 
+         // checkBox1
+         // 
+         this.checkBox1.AutoSize = true;
+         this.checkBox1.Location = new System.Drawing.Point(410, 9);
+         this.checkBox1.Name = "checkBox1";
+         this.checkBox1.Size = new System.Drawing.Size(139, 24);
+         this.checkBox1.TabIndex = 48;
+         this.checkBox1.Text = "Track RW time";
+         this.checkBox1.UseVisualStyleBackColor = true;
+         this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
          // 
          // Form1
          // 
          this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
          this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
          this.ClientSize = new System.Drawing.Size(1437, 440);
+         this.Controls.Add(this.checkBox1);
+         this.Controls.Add(this.button1);
          this.Controls.Add(this.button2);
          this.Controls.Add(this.ux_language);
          this.Controls.Add(this.ux_label2);
@@ -836,6 +860,8 @@
       private System.Windows.Forms.Label ux_label2;
       private System.Windows.Forms.ComboBox ux_language;
       private System.Windows.Forms.Button button2;
+      private System.Windows.Forms.Button button1;
+      private System.Windows.Forms.CheckBox checkBox1;
    }
 }
 

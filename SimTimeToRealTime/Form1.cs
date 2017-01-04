@@ -16,14 +16,17 @@ namespace SimTimeToRealTime
    {
       DateTime dt_systemTime;
       DateTime dt_rwUTC;
-      DateTime dt_simTime = DateTime.UtcNow;
-      DateTime dt_simLocalTime = DateTime.UtcNow;
+      DateTime dt_simTime;
+      DateTime dt_simLocalTime;
 
       Boolean ev1_isactive = false,
               ev2_isactive = false,
               ev3_isactive = false,
               ev4_isactive = false,
-              ev5_isactive = false;
+              ev5_isactive = false,
+              need_to_close_SC = false;
+
+      Object sc_lock = new object();
 
       String dateFormatstring = "M/d/yy";
       String[] englishLabels = { "Set Sim Time (UTC)", "Sim Local Time Offset", "Date Format", "Name",
@@ -36,18 +39,31 @@ namespace SimTimeToRealTime
       public Form1()
       {
          InitializeComponent();
+         get_time_update();
+         
+         //initialize sim times
+         dt_simTime = dt_simLocalTime = dt_rwUTC;
+         ux_simTimePicker.Value = dt_simTime;
          write_simtimes();
+
          ux_systemTime.Text = write_dateTime(dt_systemTime);
          ux_UTC.Text = write_dateTime(dt_rwUTC);
+         timer1.Start();
       }
 
       private void timer1_Tick(object sender, EventArgs e)
       {
+         if(need_to_close_SC == true)
+         {
+            disconnect_simconnect();
+            need_to_close_SC = false;
+         }
          if(DateTime.Now.Minute != dt_systemTime.Minute)
          {
             get_time_update();
             update_simtimes();
             update_remtime();
+
          }
       }
 
@@ -61,10 +77,32 @@ namespace SimTimeToRealTime
 
       private void update_simtimes()
       {
-         dt_simLocalTime = dt_simLocalTime.Add(new TimeSpan(0, 1, 0));
-         dt_simTime = dt_simTime.Add(new TimeSpan(0, 1, 0));
+         if (checkBox1.Checked)
+         {
+            dt_simTime = DateTime.UtcNow;
+            dt_simLocalTime = dt_simTime.AddHours((double)ux_simTimeOffset.Value);
+         }
+         else
+         {
+            dt_simLocalTime = dt_simLocalTime.Add(new TimeSpan(0, 1, 0));
+            dt_simTime = dt_simTime.Add(new TimeSpan(0, 1, 0));
+         }
+
          ux_simTimePicker.Value = dt_simTime;
          write_simtimes();
+      }
+
+      private void checkBox1_CheckedChanged(object sender, EventArgs e)
+      {
+         if (checkBox1.Checked)
+         {
+            dt_simTime = DateTime.UtcNow;
+            dt_simLocalTime = dt_simTime.AddHours((double)ux_simTimeOffset.Value);
+         } 
+         ux_simTimePicker.Value = dt_simTime;
+         write_simtimes();
+         recalculate_eventTimes();
+         update_remtime();
       }
 
       private void write_simtimes()
@@ -336,14 +374,18 @@ namespace SimTimeToRealTime
          return rtn;
       }
 
-
+ 
       /////////////////////////////////////
       ///   Start SIMCONNECT Section   ///
       ////////////////////////////////////
-     
+      private void button1_Click(object sender, EventArgs e)
+      {
+         set_sim_time(ux_simTimePicker.Value);
+      }
 
       private void button2_Click(object sender, EventArgs e)
       {
+         checkBox1.Checked = false;
          get_sim_time();
       }
 
@@ -367,6 +409,19 @@ namespace SimTimeToRealTime
          REQUEST_1,
       };
 
+      enum NOTIFICATION_GROUPS
+      {
+         GROUP0,
+      }
+
+      enum EVENTS
+      {
+         ZULU_HOURS_SET,
+         ZULU_MINUTES_SET,
+         ZULU_DAY_SET,
+         ZULU_YEAR_SET
+      };
+
       [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
       struct StructTime
       {
@@ -377,9 +432,12 @@ namespace SimTimeToRealTime
       {
          if (m.Msg == WM_USER_SIMCONNECT)
          {
-            if (simconnect != null)
+            lock (sc_lock)
             {
-               simconnect.ReceiveMessage();
+               if (simconnect != null)
+               {
+                  simconnect.ReceiveMessage();
+               }
             }
          }
          else
@@ -400,25 +458,107 @@ namespace SimTimeToRealTime
             // A connection to the SimConnect server could not be established 
             return false;
          }
+         //MessageBox.Show("opened simconnect");
          return true;
       }
 
       private Boolean disconnect_simconnect()
       {
-         // Close
-         if (simconnect != null)
+         lock (sc_lock)
          {
-            simconnect.Dispose();
-            simconnect = null;
-            return true;
+            // Close
+            if (simconnect != null)
+            {
+               
+               simconnect.Dispose();
+               simconnect = null;
+               //MessageBox.Show("closed simconnect");
+               return true;
+            }
          }
          return false;
+      }
+
+      public void set_sim_time(DateTime time)
+      {
+         connect_simconnect();
+         if (simconnect == null)
+         {
+            MessageBox.Show("Cannot connect to sim");
+            return;
+         }
+         try
+         {
+            // listen to connect and quit msgs
+            simconnect.OnRecvOpen += new SimConnect.RecvOpenEventHandler(simconnect_OnRecvOpen);
+            simconnect.OnRecvQuit += new SimConnect.RecvQuitEventHandler(simconnect_OnRecvQuit);
+
+            // listen to exceptions
+            simconnect.OnRecvException += new SimConnect.RecvExceptionEventHandler(simconnect_OnRecvException);
+
+            // listen to events
+            simconnect.OnRecvEvent += new SimConnect.RecvEventEventHandler(simconnect_OnRecvEvent);
+
+            simconnect.MapClientEventToSimEvent(EVENTS.ZULU_DAY_SET, "ZULU_DAY_SET");
+            simconnect.AddClientEventToNotificationGroup(NOTIFICATION_GROUPS.GROUP0, EVENTS.ZULU_DAY_SET, false);
+            simconnect.MapClientEventToSimEvent(EVENTS.ZULU_YEAR_SET, "ZULU_YEAR_SET");
+            simconnect.AddClientEventToNotificationGroup(NOTIFICATION_GROUPS.GROUP0, EVENTS.ZULU_YEAR_SET, false);
+            simconnect.MapClientEventToSimEvent(EVENTS.ZULU_HOURS_SET, "ZULU_HOURS_SET");
+            simconnect.AddClientEventToNotificationGroup(NOTIFICATION_GROUPS.GROUP0, EVENTS.ZULU_HOURS_SET, false);
+            simconnect.MapClientEventToSimEvent(EVENTS.ZULU_MINUTES_SET, "ZULU_MINUTES_SET");
+            simconnect.AddClientEventToNotificationGroup(NOTIFICATION_GROUPS.GROUP0, EVENTS.ZULU_MINUTES_SET, false);
+
+            // set the group priority
+            simconnect.SetNotificationGroupPriority(NOTIFICATION_GROUPS.GROUP0, SimConnect.SIMCONNECT_GROUP_PRIORITY_HIGHEST);
+            //MessageBox.Show((time.Hour.ToString() + time.Minute + time.Year + time.DayOfYear));
+
+            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.ZULU_HOURS_SET, (uint)time.Hour, NOTIFICATION_GROUPS.GROUP0, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.ZULU_MINUTES_SET, (uint)time.Minute, NOTIFICATION_GROUPS.GROUP0, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.ZULU_YEAR_SET, (uint)time.Year, NOTIFICATION_GROUPS.GROUP0, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+            simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.ZULU_DAY_SET, (uint)time.DayOfYear, NOTIFICATION_GROUPS.GROUP0, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+         }
+         catch (COMException ex)
+         {
+            MessageBox.Show(ex.Message);
+         }
+      }
+
+
+      void simconnect_OnRecvEvent(SimConnect sender, SIMCONNECT_RECV_EVENT recEvent)
+      {
+         switch (recEvent.uEventID)
+         {
+            case (uint)EVENTS.ZULU_DAY_SET:
+               //disconnect_simconnect();
+                //MessageBox.Show("ZULU_DAY_SET");
+               break;
+
+            case (uint)EVENTS.ZULU_HOURS_SET:
+               //disconnect_simconnect();
+                //MessageBox.Show("hours");
+               break;
+
+            case (uint)EVENTS.ZULU_MINUTES_SET:
+               //disconnect_simconnect();
+                //MessageBox.Show("minutes");
+               break;
+
+            case (uint)EVENTS.ZULU_YEAR_SET:
+               //MessageBox.Show("year");
+               need_to_close_SC = true;
+               
+               break;
+         }
       }
 
       public void get_sim_time()
       {
          connect_simconnect();
-
+         if(simconnect == null)
+         {
+            MessageBox.Show("Cannot connect to sim");
+            return;
+         }
          try
          {
             // listen to connect and quit msgs
@@ -462,13 +602,17 @@ namespace SimTimeToRealTime
                ux_simTimePicker.Value = sct;
                write_simtimes();
                recalculate_eventTimes();
+               need_to_close_SC = true;
                break;
 
             default:
                MessageBox.Show("Unknown request ID: " + data.dwRequestID);
+               need_to_close_SC = true;
                break;
          }
       }
+
+      
 
       void simconnect_OnRecvOpen(SimConnect sender, SIMCONNECT_RECV_OPEN data)
       {
