@@ -458,7 +458,6 @@ namespace SimTimeToRealTime
             // A connection to the SimConnect server could not be established 
             return false;
          }
-         //MessageBox.Show("opened simconnect");
          return true;
       }
 
@@ -466,13 +465,10 @@ namespace SimTimeToRealTime
       {
          lock (sc_lock)
          {
-            // Close
             if (simconnect != null)
             {
-               
                simconnect.Dispose();
                simconnect = null;
-               //MessageBox.Show("closed simconnect");
                return true;
             }
          }
@@ -510,8 +506,8 @@ namespace SimTimeToRealTime
 
             // set the group priority
             simconnect.SetNotificationGroupPriority(NOTIFICATION_GROUPS.GROUP0, SimConnect.SIMCONNECT_GROUP_PRIORITY_HIGHEST);
-            //MessageBox.Show((time.Hour.ToString() + time.Minute + time.Year + time.DayOfYear));
-
+            
+            //set time in the sim
             simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.ZULU_HOURS_SET, (uint)time.Hour, NOTIFICATION_GROUPS.GROUP0, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
             simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.ZULU_MINUTES_SET, (uint)time.Minute, NOTIFICATION_GROUPS.GROUP0, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
             simconnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENTS.ZULU_YEAR_SET, (uint)time.Year, NOTIFICATION_GROUPS.GROUP0, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
@@ -528,25 +524,11 @@ namespace SimTimeToRealTime
       {
          switch (recEvent.uEventID)
          {
-            case (uint)EVENTS.ZULU_DAY_SET:
-               //disconnect_simconnect();
-                //MessageBox.Show("ZULU_DAY_SET");
-               break;
-
-            case (uint)EVENTS.ZULU_HOURS_SET:
-               //disconnect_simconnect();
-                //MessageBox.Show("hours");
-               break;
-
-            case (uint)EVENTS.ZULU_MINUTES_SET:
-               //disconnect_simconnect();
-                //MessageBox.Show("minutes");
-               break;
-
             case (uint)EVENTS.ZULU_YEAR_SET:
-               //MessageBox.Show("year");
                need_to_close_SC = true;
-               
+               break;
+            default:
+               //do nothing.
                break;
          }
       }
@@ -636,9 +618,6 @@ namespace SimTimeToRealTime
       {
          disconnect_simconnect();
       }
-
-
    }
-
 }
 
