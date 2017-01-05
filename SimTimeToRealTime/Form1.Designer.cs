@@ -786,7 +786,7 @@
          this.Controls.Add(this.ux_label0);
          this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
          this.Name = "Form1";
-         this.Text = "SimTime2RW";
+         this.Text = "SimTime2RealTime";
          ((System.ComponentModel.ISupportInitialize)(this.ux_simTimeOffset)).EndInit();
          this.tableLayoutPanel1.ResumeLayout(false);
          this.tableLayoutPanel1.PerformLayout();
